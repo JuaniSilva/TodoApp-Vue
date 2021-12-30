@@ -1,10 +1,11 @@
-
 <script>
 import Header from "./components/TheHeader.vue";
+import TodoContainer from "./components/TodoContainer.vue";
 export default {
   name: "App",
   components: {
     Header,
+    TodoContainer,
   },
   data() {
     return {
@@ -12,7 +13,7 @@ export default {
       newTodoInput: "",
       checkboxValue: "",
       listOfTodos: [],
-      filterValue: 'all',
+      filterValue: "all",
     };
   },
   methods: {
@@ -26,83 +27,89 @@ export default {
       this.newTodoCheck = false;
       this.saveTodos();
     },
-    clearCompleted(){
+    clearCompleted() {
       this.listOfTodos = this.listOfTodos.filter((todo) => todo[0] == false);
       this.saveTodos();
     },
-    testing(){
-      console.log(this.test)
+    testing() {
+      console.log(this.test);
     },
-    changeState(e){
-      for(let todo of this.listOfTodos){
-        if(todo[2] == e.target.id){
-          todo[2] == e.target.checked
+    changeState(e) {
+      for (let todo of this.listOfTodos) {
+        if (todo[2] == e.target.id) {
+          console.log(todo)
+          todo[0] = !todo[0];
         }
       }
-      this.saveTodos()
+      this.saveTodos();
     },
-    removeTodo(e){
-      this.listOfTodos = this.listOfTodos.filter((todo) => todo[2] != e.target.dataset.todoId);
+    removeTodo(e) {
+      this.listOfTodos = this.listOfTodos.filter(
+        (todo) => todo[2] != e.target.dataset.todoId
+      );
       e.target.parentNode.parentNode.remove();
       this.saveTodos();
     },
     saveTodos() {
       localStorage.setItem("listOfTodos", JSON.stringify(this.listOfTodos));
     },
-    dragOver(e){
-      let afterElement
-      if(e.type == "touchmove"){
+    dragOver(e) {
+      let afterElement;
+      if (e.type == "touchmove") {
         let evt = typeof e.originalEvent === "undefined" ? e : e.originalEvent;
         let touch = evt.touches[0] || evt.changedTouches[0];
         afterElement = this.getDragAfterElement(touch.pageY);
       } else {
         afterElement = this.getDragAfterElement(e.clientY);
       }
-      const draggable = document.querySelector(".dragging")
-      const todoList = document.querySelector("#todoList")
-      if(afterElement == null){
+      const draggable = document.querySelector(".dragging");
+      const todoList = document.querySelector("#todoList");
+      if (afterElement == null) {
         todoList.appendChild(draggable);
-      } else{
-         todoList.insertBefore(draggable, afterElement);
+      } else {
+        todoList.insertBefore(draggable, afterElement);
       }
     },
-    getDragAfterElement(y){
-      const todoList = document.querySelector("section")
-      
+    getDragAfterElement(y) {
+      const todoList = document.querySelector("section");
+
       const draggableElements = [
-    ...todoList.querySelectorAll(".todo-container:not(.dragging)"),
-    ];
+        ...todoList.querySelectorAll(".todo-container:not(.dragging)"),
+      ];
 
       return draggableElements.reduce(
-      (closest, child) => {
-        const box = child.getBoundingClientRect();
-        const offset = y - box.top - box.height / 2;
-        if (offset < 0 && offset > closest.offset) {
-          return { offset: offset, element: child };
-        } else {
-          return closest;
-        }
-      },{ offset: Number.NEGATIVE_INFINITY }).element;
+        (closest, child) => {
+          const box = child.getBoundingClientRect();
+          const offset = y - box.top - box.height / 2;
+          if (offset < 0 && offset > closest.offset) {
+            return { offset: offset, element: child };
+          } else {
+            return closest;
+          }
+        },
+        { offset: Number.NEGATIVE_INFINITY }
+      ).element;
     },
   },
   computed: {
     filteredListOfTodos() {
-      if(this.filterValue == 'all'){
-        return this.listOfTodos
-      } else if(this.filterValue == "active"){
-        return this.listOfTodos.filter((todo) => todo[0] == false)
+      if (this.filterValue == "all") {
+        return this.listOfTodos;
+      } else if (this.filterValue == "active") {
+        return this.listOfTodos.filter((todo) => todo[0] == false);
       } else {
-        return this.listOfTodos.filter((todo) => todo[0] == true)
+        return this.listOfTodos.filter((todo) => todo[0] == true);
       }
     },
   },
   created() {
-    if(JSON.parse(localStorage.getItem("listOfTodos"))){
-      this.listOfTodos = JSON.parse(localStorage.getItem("listOfTodos"))
+    if (JSON.parse(localStorage.getItem("listOfTodos"))) {
+      this.listOfTodos = JSON.parse(localStorage.getItem("listOfTodos"));
+      //  localStorage.setItem("listOfTodos", JSON.stringify([]))
     } else {
-      this.listOfTodos = []
+      this.listOfTodos = [];
     }
-  }
+  },
 };
 </script>
 <template>
@@ -121,59 +128,94 @@ export default {
       v-model="newTodoInput"
     />
   </form>
-
   <section>
     <div id="todoList">
-      <div
-        class="todo-container "
+      <TodoContainer 
+        class="todo-container" 
         v-for:="todo in filteredListOfTodos"
-        key:="todo[2]"
+        key:="todo[2]" 
         @dragstart="$event.target.classList.add('dragging')"
         @dragend="$event.target.classList.remove('dragging')"
-        @touchmove="$event.currentTarget.classList.add('dragging'); dragOver($event)"
+        @touchmove="$event.currentTarget.classList.add('dragging');dragOver($event)"
         @touchend="$event.currentTarget.classList.remove('dragging')"
-        @dragover.prevent="dragOver"
-        draggable="true">
-        <div>
-          <input type="checkbox" v-model="todo[0]" :id="todo[2]" @change="changeState" class="todo-checkbox" />
-          <label :for="todo[2]" class="todo-label">{{ todo[1] }}</label>
-        </div>
-        <button class="btn"  @click="removeTodo">
-          <img src="./images/icon-cross.svg" alt="" :data-todo-id="todo[2]"/>
-        </button>
-      </div>
+        @dragover.prevent="dragOver" 
+        @changeState="changeState"
+        @removeTodo="removeTodo"
+        :todo="todo" 
+        draggable="true"
+        />
     </div>
-      <div class="section__footer ">
-        <p>{{ filteredListOfTodos.length }} items left</p>
-         <div class="filter-todo desktop">
-          <div>
-            <input type="radio"  name="selectionDesktop" id="all" value="all" v-model="filterValue" checked >
-            <label for="all" class="radio-label" >All</label>
-          </div>
-          <div>
-            <input type="radio"  name="selectionDesktop" id="active" v-model="filterValue" value="active">
-            <label for="active" class="space-left radio-label">Active</label>
-          </div>
-          <div>
-            <input type="radio"  name="selectionDesktop" id="completed" v-model="filterValue" value="completed" >
-            <label for="completed" class="space-left radio-label">Completed</label>
-          </div>
+    <div class="section__footer">
+      <p>{{ filteredListOfTodos.length }} items left</p>
+      <div class="filter-todo desktop">
+        <div>
+          <input
+            type="radio"
+            name="selectionDesktop"
+            id="all"
+            value="all"
+            v-model="filterValue"
+            checked
+          />
+          <label for="all" class="radio-label">All</label>
         </div>
-        <button class="btn" @click="clearCompleted" >Clear Completed</button>
-      </div >
+        <div>
+          <input
+            type="radio"
+            name="selectionDesktop"
+            id="active"
+            v-model="filterValue"
+            value="active"
+          />
+          <label for="active" class="space-left radio-label">Active</label>
+        </div>
+        <div>
+          <input
+            type="radio"
+            name="selectionDesktop"
+            id="completed"
+            v-model="filterValue"
+            value="completed"
+          />
+          <label for="completed" class="space-left radio-label"
+            >Completed</label
+          >
+        </div>
+      </div>
+      <button class="btn" @click="clearCompleted">Clear Completed</button>
+    </div>
   </section>
 
   <div class="filter-todo mobile">
     <div>
-      <input type="radio"  name="selection" id="all" value="all" v-model="filterValue" checked >
+      <input
+        type="radio"
+        name="selection"
+        id="all"
+        value="all"
+        v-model="filterValue"
+        checked
+      />
       <label for="all" class="radio-label">All</label>
     </div>
     <div>
-      <input type="radio"  name="selection" id="active" v-model="filterValue" value="active">
-      <label for="active" class="space-left radio-label ">Active</label>
+      <input
+        type="radio"
+        name="selection"
+        id="active"
+        v-model="filterValue"
+        value="active"
+      />
+      <label for="active" class="space-left radio-label">Active</label>
     </div>
     <div>
-      <input type="radio"  name="selection" id="completed" v-model="filterValue" value="completed" >
+      <input
+        type="radio"
+        name="selection"
+        id="completed"
+        v-model="filterValue"
+        value="completed"
+      />
       <label for="completed" class="space-left radio-label">Completed</label>
     </div>
   </div>
@@ -201,7 +243,7 @@ body {
   background-color: var(--light-gray);
   padding: 48px 24px;
   position: relative;
-  transition: all .25s ease-in;
+  transition: all 0.25s ease-in;
 }
 form {
   background-color: white;
@@ -252,12 +294,12 @@ section {
   display: flex;
   align-items: center;
 }
-.todo-label{
+.todo-label {
   margin-left: 16px;
   cursor: pointer;
   color: var(--light-very-dark-grayish-blue);
 }
-.todo-checkbox,
+
 .done-checkbox {
   appearance: none;
   border-radius: 50%;
@@ -295,7 +337,7 @@ section {
   top: 25%;
   right: 25%;
 }
-.section__footer{
+.section__footer {
   display: flex;
   justify-content: space-between;
   padding: 20px 24px;
@@ -309,37 +351,37 @@ section {
 .section__footer .btn:hover {
   color: var(--light-very-dark-grayish-blue);
 }
-.filter-todo{
+.filter-todo {
   display: flex;
   background: white;
   width: 100%;
   max-width: 540px;
-  border-radius: .25rem;
+  border-radius: 0.25rem;
   padding: 14px 0;
   margin: 0 auto;
   justify-content: center;
 }
-.filter-todo input{
+.filter-todo input {
   display: none;
 }
-.radio-label{
+.radio-label {
   cursor: pointer;
   font-weight: 700;
   color: var(--light-dark-grayish-blue);
 }
-.radio-label:hover{
+.radio-label:hover {
   color: var(--light-very-dark-grayish-blue);
 }
-.space-left{
+.space-left {
   margin-left: 1.25rem;
 }
-.filter-todo input:checked +.radio-label{
+.filter-todo input:checked + .radio-label {
   color: var(--primary-blue);
 }
-.dragging{
+.dragging {
   opacity: 0.5;
 }
-.desktop{
+.desktop {
   display: none;
 }
 span {
@@ -349,45 +391,46 @@ span {
   font-size: 14px;
   color: var(--light-dark-grayish-blue);
 }
-.dark{
+.dark {
   background: url("images/bg-mobile-dark.jpg");
   background-repeat: no-repeat;
   background-size: 100% 200px;
   background-color: var(--dark-blue);
-  transition: all .25s ease-in;
+  transition: all 0.25s ease-in;
 }
-.dark form{
+.dark form {
   background-color: var(--dark-desaturated-blue);
 }
 .dark section {
   background-color: var(--dark-desaturated-blue);
 }
-.dark .filter-todo{
+.dark .filter-todo {
   background-color: var(--dark-desaturated-blue);
 }
-.dark input[type="text"], .dark .todo-container .todo-label{
+.dark input[type="text"],
+.dark .todo-container .todo-label {
   color: var(--dark-grayish-blue);
 }
 .dark .todo-checkbox:checked + .todo-label {
   color: var(--dark-grayish-blue);
-  opacity: .5;
+  opacity: 0.5;
 }
-.dark .radio-label:hover, .dark .section__footer .btn:hover{
+.dark .radio-label:hover,
+.dark .section__footer .btn:hover {
   color: var(--dark-grayish-blue-hover);
 }
-@media only screen and (min-width: 56.25rem){
-  body{
+@media only screen and (min-width: 56.25rem) {
+  body {
     background: url("images/bg-desktop-light.jpg");
     background-repeat: no-repeat;
     background-size: 100% 200px;
     background-color: var(--light-gray);
   }
-  .dark{
+  .dark {
     background: url("images/bg-desktop-dark.jpg");
     background-repeat: no-repeat;
     background-size: 100% 200px;
     background-color: var(--dark-blue);
-
   }
   .mobile {
     display: none;
