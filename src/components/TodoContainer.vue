@@ -4,11 +4,6 @@ export default {
   props: {
     todo: Array
   },
-  data() {
-    return {
-      propedTodo: JSON.parse(JSON.stringify(this.todo)),
-    }
-  },
 }
 </script>
 
@@ -17,12 +12,12 @@ export default {
     <div class="container">
       <input
         type="checkbox"
-        v-model="propedTodo[0]"
+        :checked="todo[0]"
         :id="todo[2]"
         @change="$emit('changeState', $event)"
         class="todo-checkbox"
       />
-      <label :for="todo[2]" class="todo-label">{{ todo[1] }}</label>
+      <label :for="todo[2]" class="todo-label">{{ todo[1] }} </label>
     </div>
     <button class="btn" @click="$emit('removeTodo', $event)">
       <img src="../images/icon-cross.svg" alt="" :data-todo-id="todo[2]" />

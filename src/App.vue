@@ -96,9 +96,9 @@ export default {
       if (this.filterValue == "all") {
         return this.listOfTodos;
       } else if (this.filterValue == "active") {
-        return this.listOfTodos.filter((todo) => todo[0] == false);
+        return this.listOfTodos.filter((todo) => !todo[0]);
       } else {
-        return this.listOfTodos.filter((todo) => todo[0] == true);
+        return this.listOfTodos.filter((todo) => todo[0]);
       }
     },
   },
@@ -132,8 +132,8 @@ export default {
     <div id="todoList">
       <TodoContainer 
         class="todo-container" 
-        v-for:="todo in filteredListOfTodos"
-        key:="todo[2]" 
+        v-for="todo in filteredListOfTodos"
+        :key="todo[2]" 
         @dragstart="$event.target.classList.add('dragging')"
         @dragend="$event.target.classList.remove('dragging')"
         @touchmove="$event.currentTarget.classList.add('dragging');dragOver($event)"
