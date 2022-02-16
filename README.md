@@ -19,7 +19,7 @@ Users should be able to:
 
 ### Screenshot
 
-![](./src/images/PagePreview.jpg)
+![](./src/images/PagePreview.png)
 
 ### Links
 
